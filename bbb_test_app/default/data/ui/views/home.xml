@@ -1,0 +1,10 @@
+<?xml version="1.1"?>
+<dashboard>
+<label>BBB test app home</label>
+<row>
+  <html>
+    don't look at me.  Go look at <a href="../aaa_test_app">aaa_test_app's landing page</a> instead.
+  </html>
+</row>
+
+</dashboard>

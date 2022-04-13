@@ -1,0 +1,7 @@
+<!-- Copyright (C) 2010-2021 Sideview LLC.  All Rights Reserved. -->
+<nav>
+  <view name="home" default="true"/>
+
+  <view name="search"/>
+
+</nav>

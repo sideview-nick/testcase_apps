@@ -1,0 +1,73 @@
+<dashboard>
+<label>AAA test app home</label>
+
+<row>
+  <panel>
+    <title>1) The dev docs that started this discussion</title>
+    <html>
+
+
+      <pre>
+        https://dev.splunk.com/enterprise/docs/developapps/createapps/appanatomy/#Considerations-for-Python-code-files
+      </pre>
+    </html>
+  </panel>
+</row>
+
+
+<row>
+  <panel>
+    <title>2) What happens in scripttype=persist REST endpoints,  (a subset of restmap.conf)</title>
+    <html>
+
+
+
+      <p>
+        Run <a href="https://192.168.1.201:8089/services/a_test_endpoint" target="_blank">a_test_endpoint</a> in aaa_test_app
+      </p>
+
+      <p>
+        Run <a href="https://192.168.1.201:8089/services/b_test_endpoint" target="_blank">b_test_endpoint</a> in bbb_test_app
+      </p>
+
+      <p>If you restart and test,  everything works..... when only that one handler you're testing has run after the restart.  <strong>Collisions happen quickly as the rest are also run.</strong>
+      </p>
+
+
+      <dl>
+        <dt>import foo</dt>
+        <dd>bad. first one wins</dd>
+
+        <dt>doing clever sys.path.insert(1, THINGS)  before importing a non-unique thing like splunklib</dt>
+        <dd>bad. does nothing. first one to import a thing called "splunklib" wins.</dd>
+
+        <dt>import aaa_test_app.bar as bar</dt>
+        <dd>good. even though "as bar" doesn't give it a unique name.  (Untested theory - that it's the "aaa_test_app.bar" that ends up in sys.modules and hence the thing that needs to be unique)   (also odd, splunk docs have people do py3-only "namespace packages" here which... seems weird.)</dd>
+
+        <dt>from inside a successfully imported namespace package, modifying sys.path to add its own directory and importing a secondary dependency, in this case a file baz.py from there).</dt>
+        <dd>Python 2 on 7.3.8 - with the py3 namespace package import set up to failover to a normal package import, good. Works great.<br />
+            Python 3 - with the namespace package import, bad. first one wins.</dd>
+
+      </dl>
+    </html>
+  </panel>
+</row>
+
+
+<row>
+  <panel>
+    <title>3) What happens in custom search commands (commands.conf)</title>
+    <table>
+      <title>spoiler: nothing bad happens.</title>
+      <search>
+        <query>index=_internal | head 1 | atestcommand | eval side="A Side" | eval sys_path=mvjoin(sys_path,",") | stats count by side splunk_server splunk_home app whoami sys_path which_foo splunklib_version which_splunklib | eval sys.path=split(sys_path,",") | fields - sys_path
+| append [search index=_internal | head 1 | eval side="B Side" | btestcommand | eval sys_path=mvjoin(sys_path,",") | stats count by side splunk_server splunk_home app whoami sys_path which_foo splunklib_version which_splunklib | eval sys.path=split(sys_path,",") | fields - sys_path]</query>
+        <earliest>$earliest$</earliest>
+        <latest>$latest$</latest>
+      </search>
+    </table>
+  </panel>
+</row>
+
+
+</dashboard>
