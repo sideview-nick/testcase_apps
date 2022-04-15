@@ -5,11 +5,8 @@
   <panel>
     <title>1) The dev docs that started this discussion</title>
     <html>
+      <a href="https://dev.splunk.com/enterprise/docs/developapps/createapps/appanatomy/#Considerations-for-Python-code-files" target="_blank">https://dev.splunk.com/enterprise/docs/developapps/createapps/appanatomy/#Considerations-for-Python-code-files</a>
 
-
-      <pre>
-        https://dev.splunk.com/enterprise/docs/developapps/createapps/appanatomy/#Considerations-for-Python-code-files
-      </pre>
     </html>
   </panel>
 </row>
@@ -40,7 +37,7 @@
         <dd>bad. does nothing. first one to import a thing called "splunklib" wins.</dd>
 
         <dt>import aaa_test_app.bar as bar</dt>
-        <dd>good. even though "as bar" doesn't give it a unique name.  (Untested theory - that it's the "aaa_test_app.bar" that ends up in sys.modules and hence the thing that needs to be unique)   (also odd, splunk docs have people do py3-only "namespace packages" here which... seems weird. working theory - telephone game between eng and docs led to "make a package" becoming "make a subdirectory" and someone forgot about the __init__.py part)</dd>
+        <dd>good. even though "as bar" doesn't give it a unique name that's fine.  (slightly odd that splunk docs have people do py3-only "namespace packages" here. working theory - telephone game between eng and docs led to "make a package" becoming "make a subdirectory" and someone forgot about the __init__.py part)</dd>
 
         <dt>from inside a successfully imported namespace package, modifying sys.path to add its own directory and importing a secondary dependency, in this case a file baz.py from there).</dt>
         <dd>Python 2 on 7.3.8 - with the py3 namespace package import set up to failover to a normal package import, good. Works great.<br />
@@ -70,7 +67,20 @@
 <row>
   <panel>
     <title>4) What happens in custom search commands (commands.conf), run on the IDX tier?</title>
-    <html>Needs a testcase.  However I have tested this manually not too long ago and I couldn't make anything bad happen.</html>
+    <html>Needs a testcase.  However I have tested this manually not too long ago and I couldn't make anything bad happen</html>
+  </panel>
+</row>
+
+<row>
+  <panel>
+    <title>5) modular inputs</title>
+    <table>
+      <title>spoiler - just a quick pass but so far it seems fine on 8.2.2</title>
+      <search>
+        <query>index=main ( app=aaa_test_app OR app=bbb_test_app ) | dedup app | eval sys_path=split(sys_path,",") | table app script *_provenance sys_path | sort app</query>
+      </search>
+
+    </table>
   </panel>
 </row>
 

@@ -1,3 +1,3 @@
 
 def provenance():
-    return "I am the foo.py in the bbb_test_app yay!"
+    return "foo.py from bbb_test_app"
