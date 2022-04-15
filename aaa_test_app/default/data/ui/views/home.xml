@@ -22,15 +22,13 @@
 
 
 
-      <p>
-        Run <a href="https://192.168.1.201:8089/services/a_test_endpoint" target="_blank">a_test_endpoint</a> in aaa_test_app
-      </p>
+      <ol>
+        <li><a href="/splunkd/__raw/services/a_test_endpoint" target="_blank">open a_test_endpoint in a new tab</a>.</li>
+        <li><a href="/splunkd/__raw/services/b_test_endpoint" target="_blank">open b_test_endpoint in a new tab</a></li>
+      </ol>
 
-      <p>
-        Run <a href="https://192.168.1.201:8089/services/b_test_endpoint" target="_blank">b_test_endpoint</a> in bbb_test_app
-      </p>
 
-      <p>If you restart and test,  everything works..... when only that one handler you're testing has run after the restart.  <strong>Collisions happen quickly as the rest are also run.</strong>
+      <p>If you restart and test one endpoint,  everything will work.   It's only when more than one scripttype=persist handler has run (after a restart) that the trouble starts.
       </p>
 
 
@@ -42,11 +40,11 @@
         <dd>bad. does nothing. first one to import a thing called "splunklib" wins.</dd>
 
         <dt>import aaa_test_app.bar as bar</dt>
-        <dd>good. even though "as bar" doesn't give it a unique name.  (Untested theory - that it's the "aaa_test_app.bar" that ends up in sys.modules and hence the thing that needs to be unique)   (also odd, splunk docs have people do py3-only "namespace packages" here which... seems weird.)</dd>
+        <dd>good. even though "as bar" doesn't give it a unique name.  (Untested theory - that it's the "aaa_test_app.bar" that ends up in sys.modules and hence the thing that needs to be unique)   (also odd, splunk docs have people do py3-only "namespace packages" here which... seems weird. working theory - telephone game between eng and docs led to "make a package" becoming "make a subdirectory" and someone forgot about the __init__.py part)</dd>
 
         <dt>from inside a successfully imported namespace package, modifying sys.path to add its own directory and importing a secondary dependency, in this case a file baz.py from there).</dt>
         <dd>Python 2 on 7.3.8 - with the py3 namespace package import set up to failover to a normal package import, good. Works great.<br />
-            Python 3 - with the namespace package import, bad. first one wins.</dd>
+        Python 3 - with the namespace package import, bad. first one wins. WAT</dd>
 
       </dl>
     </html>
@@ -56,9 +54,9 @@
 
 <row>
   <panel>
-    <title>3) What happens in custom search commands (commands.conf)</title>
+    <title>3) What happens in custom search commands (commands.conf), run on the SH</title>
     <table>
-      <title>spoiler: nothing bad happens.</title>
+      <title>spoiler: nothing bad happens. see for yourself. Here are the outputs of atestcommand and btestcommand (from aaa_test_app and bbb_test_app) on different lines.</title>
       <search>
         <query>index=_internal | head 1 | atestcommand | eval side="A Side" | eval sys_path=mvjoin(sys_path,",") | stats count by side splunk_server splunk_home app whoami sys_path which_foo splunklib_version which_splunklib | eval sys.path=split(sys_path,",") | fields - sys_path
 | append [search index=_internal | head 1 | eval side="B Side" | btestcommand | eval sys_path=mvjoin(sys_path,",") | stats count by side splunk_server splunk_home app whoami sys_path which_foo splunklib_version which_splunklib | eval sys.path=split(sys_path,",") | fields - sys_path]</query>
@@ -66,6 +64,13 @@
         <latest>$latest$</latest>
       </search>
     </table>
+  </panel>
+</row>
+
+<row>
+  <panel>
+    <title>4) What happens in custom search commands (commands.conf), run on the IDX tier?</title>
+    <html>Needs a testcase.  However I have tested this manually not too long ago and I couldn't make anything bad happen.</html>
   </panel>
 </row>
 
