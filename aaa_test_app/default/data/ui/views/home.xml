@@ -75,7 +75,7 @@
   <panel>
     <title>5) modular inputs</title>
     <table>
-      <title>spoiler - just a quick pass but so far it seems fine on 8.2.2</title>
+      <title>spoiler - just a quick pass but so far it seems fine on 8.2.2 and 7.3.8. in other words sys.path in modinputs does not actually include all the /bin directories from all installed apps. (although several people said this was true, so it may very well have done so in older versions?)</title>
       <search>
         <query>index=main ( app=aaa_test_app OR app=bbb_test_app ) | dedup app | eval sys_path=split(sys_path,",") | table app script *_provenance sys_path | sort app</query>
       </search>
